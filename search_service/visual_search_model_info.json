@@ -1,0 +1,33 @@
+{
+  "model": "ViT-B-32 (openai)",
+  "embedding_type": "image",
+  "index_type": "IndexFlatIP",
+  "embedding_dim": 512,
+  "num_products": 3820,
+  "errors": 0,
+  "categories": {
+    "Smartphones": 1252,
+    "Shoes": 374,
+    "Sports": 272,
+    "Jackets": 125,
+    "Dinnerware": 97,
+    "Tables": 261,
+    "Sofas": 176,
+    "Appliances": 182,
+    "Shirts": 65,
+    "Tablets": 240,
+    "Outdoors": 68,
+    "Dresses": 65,
+    "Beds": 138,
+    "Cookware": 162,
+    "Laptops": 32,
+    "Headphones": 97,
+    "Jeans": 66,
+    "Chairs": 111,
+    "Cameras": 34,
+    "Bicycles": 3
+  },
+  "sources": [
+    "D:\\FYP Project\\fypapp\\search_service\\data\\abo_dataset_combined.csv"
+  ]
+}

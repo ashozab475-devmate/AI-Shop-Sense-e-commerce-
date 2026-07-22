@@ -1,0 +1,57 @@
+{
+  "models": {
+    "clip_faiss": {
+      "id": "clip_faiss",
+      "name": "CLIP+FAISS",
+      "type": "text_search",
+      "version": "1.0",
+      "status": "active",
+      "accuracy": 0.997,
+      "response_time": 1,
+      "model_size": 15.8,
+      "registered_at": "2026-07-20T11:15:38.240211",
+      "config": {
+        "model": "ViT-B-32",
+        "pretrained": "openai",
+        "device": "cpu"
+      },
+      "metadata": {}
+    },
+    "image_search": {
+      "id": "image_search",
+      "name": "Image Search",
+      "type": "image_search",
+      "version": "1.0",
+      "status": "active",
+      "accuracy": 0.997,
+      "response_time": 1,
+      "model_size": 15.8,
+      "registered_at": "2026-07-20T11:15:38.315841",
+      "config": {
+        "model": "ViT-B-32",
+        "pretrained": "openai",
+        "device": "cpu"
+      },
+      "metadata": {}
+    },
+    "tensorflow_resnet50": {
+      "id": "tensorflow_resnet50",
+      "name": "TensorFlow ResNet50",
+      "type": "image_search",
+      "version": "1.0",
+      "status": "active",
+      "accuracy": 0.85,
+      "response_time": 250,
+      "model_size": 100,
+      "registered_at": "2026-07-20T11:15:38.332041",
+      "config": {
+        "model": "ResNet50",
+        "pretrained": "imagenet",
+        "device": "cpu"
+      },
+      "metadata": {}
+    }
+  },
+  "active_model": null,
+  "last_updated": "2026-07-20T11:15:38.333606"
+}

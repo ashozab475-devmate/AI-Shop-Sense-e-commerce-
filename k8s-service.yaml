@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: visual-search-service
+  namespace: default
+  labels:
+    app: visual-search
+spec:
+  type: ClusterIP
+  selector:
+    app: visual-search
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+    protocol: TCP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: visual-search-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - visual-search.example.com
+    secretName: visual-search-tls
+  rules:
+  - host: visual-search.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: visual-search-service
+            port:
+              number: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: visual-search-config
+  namespace: default
+data:
+  FLASK_ENV: "production"
+  PYTHONUNBUFFERED: "1"
+  LOG_LEVEL: "INFO"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: visual-search-secrets
+  namespace: default
+type: Opaque
+stringData:
+  API_KEY: "your-api-key-here"
+  SECRET_KEY: "your-secret-key-here"
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: visual-search-pdb
+  namespace: default
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: visual-search
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: visual-search-quota
+  namespace: default
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+    pods: "50"

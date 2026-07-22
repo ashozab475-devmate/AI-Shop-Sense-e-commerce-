@@ -1,0 +1,81 @@
+INFO:visual_search_api_clip_faiss:Starting background model loading...
+INFO:visual_search_api_clip_faiss:Loading CLIP + FAISS visual search model...
+INFO:image_search_api:Initializing image search...
+INFO:image_search_api:Loading CLIP + FAISS image search model...
+INFO:visual_search_api_clip_faiss:FAISS index loaded: 3810 vectors
+INFO:image_search_api:FAISS index loaded: 3810 vectors
+INFO:image_search_api:Metadata loaded: 3810 items
+INFO:root:Parsing model identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Loaded built-in ViT-B-32 model config.
+INFO:visual_search_api_clip_faiss:Metadata loaded: 3810 items
+INFO:visual_search_api_clip_faiss:Embeddings loaded: (3810, 512)
+INFO:root:Parsing model identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Loaded built-in ViT-B-32 model config.
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\open_clip\factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
+  warnings.warn(
+INFO:root:Instantiating model architecture: CLIP
+INFO:root:Instantiating model architecture: CLIP
+INFO:root:Loading full pretrained weights from: C:\Users\Hp\.cache\huggingface\hub\models--timm--vit_base_patch32_clip_224.openai\snapshots\a6f597a30f7b82c51704746581f9a4e41421e878\open_clip_model.safetensors
+INFO:root:Loading full pretrained weights from: C:\Users\Hp\.cache\huggingface\hub\models--timm--vit_base_patch32_clip_224.openai\snapshots\a6f597a30f7b82c51704746581f9a4e41421e878\open_clip_model.safetensors
+INFO:root:Final image preprocessing configuration set: {'size': (224, 224), 'mode': 'RGB', 'mean': (0.48145466, 0.4578275, 0.40821073), 'std': (0.26862954, 0.26130258, 0.27577711), 'interpolation': 'bicubic', 'resize_mode': 'shortest', 'fill_color': 0}
+INFO:root:Model ViT-B-32 creation process complete.
+INFO:root:Parsing tokenizer identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Attempting to load config from built-in: ViT-B-32
+INFO:root:Using default SimpleTokenizer.
+INFO:root:Final image preprocessing configuration set: {'size': (224, 224), 'mode': 'RGB', 'mean': (0.48145466, 0.4578275, 0.40821073), 'std': (0.26862954, 0.26130258, 0.27577711), 'interpolation': 'bicubic', 'resize_mode': 'shortest', 'fill_color': 0}
+INFO:root:Model ViT-B-32 creation process complete.
+INFO:root:Parsing tokenizer identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Attempting to load config from built-in: ViT-B-32
+INFO:root:Using default SimpleTokenizer.
+INFO:visual_search_api_clip_faiss:CLIP model loaded: ViT-B-32
+INFO:image_search_api:CLIP model loaded: ViT-B-32
+INFO:image_loader:ImageLoader initialized with cache_dir=image_cache, size=224
+INFO:image_search_api:Image search initialized successfully
+INFO:visual_search_api_tensorflow:Initializing TensorFlow search...
+WARNING:visual_search_api_tensorflow:TensorFlow not installed, skipping model load
+WARNING:visual_search_api_tensorflow:TensorFlow search initialization incomplete
+INFO:batch_search:Initializing batch search...
+INFO:batch_search:Loading batch search model...
+INFO:root:Parsing model identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Loaded built-in ViT-B-32 model config.
+INFO:root:Instantiating model architecture: CLIP
+INFO:root:Loading full pretrained weights from: C:\Users\Hp\.cache\huggingface\hub\models--timm--vit_base_patch32_clip_224.openai\snapshots\a6f597a30f7b82c51704746581f9a4e41421e878\open_clip_model.safetensors
+INFO:root:Final image preprocessing configuration set: {'size': (224, 224), 'mode': 'RGB', 'mean': (0.48145466, 0.4578275, 0.40821073), 'std': (0.26862954, 0.26130258, 0.27577711), 'interpolation': 'bicubic', 'resize_mode': 'shortest', 'fill_color': 0}
+INFO:root:Model ViT-B-32 creation process complete.
+INFO:root:Parsing tokenizer identifier. Schema: None, Identifier: ViT-B-32
+INFO:root:Attempting to load config from built-in: ViT-B-32
+INFO:root:Using default SimpleTokenizer.
+INFO:docs_api:Documentation API initialized
+INFO:alternative_models_api:Initializing alternative models...
+INFO:alternative_models_api:Loading alternative models...
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=DenseNet121_Weights.IMAGENET1K_V1`. You can also use `weights=DenseNet121_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+INFO:alternative_models_api:DenseNet121 loaded
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=EfficientNet_B0_Weights.IMAGENET1K_V1`. You can also use `weights=EfficientNet_B0_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+INFO:alternative_models_api:EfficientNet-B0 loaded
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=MobileNet_V2_Weights.IMAGENET1K_V1`. You can also use `weights=MobileNet_V2_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+INFO:alternative_models_api:MobileNetV2 loaded
+C:\Users\Hp\AppData\Local\Programs\Python\Python314\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ViT_B_16_Weights.IMAGENET1K_V1`. You can also use `weights=ViT_B_16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+INFO:alternative_models_api:Vision Transformer loaded
+INFO:image_loader:ImageLoader initialized with cache_dir=image_cache, size=224
+INFO:alternative_models_api:Loaded 4 alternative models
+INFO:model_registry:Registry loaded with 3 models
+WARNING:model_registry:Model clip_faiss already registered, updating...
+INFO:model_registry:Model clip_faiss registered successfully
+INFO:model_registry:Registry saved
+WARNING:model_registry:Model image_search already registered, updating...
+INFO:model_registry:Model image_search registered successfully
+INFO:model_registry:Registry saved
+WARNING:model_registry:Model tensorflow_resnet50 already registered, updating...
+INFO:model_registry:Model tensorflow_resnet50 registered successfully
+INFO:model_registry:Registry saved
+INFO:model_registry:Active model set to clip_faiss
+INFO:model_registry:Registry initialized with default models
+INFO:model_versioning:No versions file found
+INFO:model_versioning:Model versioning system initialized
+INFO:waitress:Serving on http://0.0.0.0:5000

@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  visual-search-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visual-search-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./search_service:/app
+      - ./model_versions:/app/model_versions
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/visual-search/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - visual-search-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: visual-search-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - visual-search-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: visual-search-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - visual-search-api
+    restart: unless-stopped
+    networks:
+      - visual-search-network
+
+volumes:
+  redis-data:
+
+networks:
+  visual-search-network:
+    driver: bridge

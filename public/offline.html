@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopSense - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      background: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .features {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    .features h3 {
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .features ul {
+      list-style: none;
+    }
+
+    .features li {
+      color: #666;
+      font-size: 14px;
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .features li:before {
+      content: '✓';
+      color: #667eea;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.3s;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .button:hover {
+      background: #764ba2;
+    }
+
+    .button-secondary {
+      background: #e0e0e0;
+      color: #333;
+      margin-left: 10px;
+    }
+
+    .button-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      color: #856404;
+      font-size: 14px;
+    }
+
+    .status.online {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Don't worry, you can still browse cached content.</p>
+
+    <div class="features">
+      <h3>What you can do offline:</h3>
+      <ul>
+        <li>Browse previously visited products</li>
+        <li>View your shopping cart</li>
+        <li>Check your profile information</li>
+        <li>Read cached pages</li>
+      </ul>
+    </div>
+
+    <div class="status" id="status">
+      <strong>Status:</strong> <span id="statusText">Offline</span>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <button class="button" onclick="goBack()">Go Back</button>
+      <button class="button button-secondary" onclick="goHome()">Go Home</button>
+    </div>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      const statusText = document.getElementById('statusText');
+
+      if (navigator.onLine) {
+        statusEl.classList.add('online');
+        statusText.textContent = 'Online - Refresh to continue';
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        statusEl.classList.remove('online');
+        statusText.textContent = 'Offline';
+      }
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    function goHome() {
+      window.location.href = '/';
+    }
+
+    // Listen for connection changes
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Initial check
+    updateStatus();
+  </script>
+</body>
+</html>

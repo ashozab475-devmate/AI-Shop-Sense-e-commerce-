@@ -1,0 +1,306 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  name              String
+  email             String         @unique
+  phone             String
+  password          String
+  role              String         @default("user") // "user", "seller", "admin"
+  profilePicture    String?
+  walletBalance     Float          @default(0)       // store credit from trade-ins
+  storeName         String?
+  storeDescription  String?
+  address           String?
+  bankAccount       String?
+  notificationsEnabled Boolean @default(true)
+  lastLogin         DateTime?
+  cart              Cart?
+  orders            Order[]
+  reviews           Review[]
+  wishlist          Wishlist?
+  tradeRequests     TradeRequest[]
+  notifications     Notification[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model Product {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  basePrice        Float             @default(0)
+  currentPrice     Float             @default(0)
+  minPrice         Float             @default(0)
+  maxPrice         Float             @default(0)
+  category         String
+  image            String?
+  imageUrl         String?
+  gallery          Json?
+  stock            Int               @default(0)
+  maxStock         Int               @default(100)
+  rating           Float             @default(0)
+  reviewCount      Int               @default(0)
+  approved         Boolean           @default(true)
+  approvedBy       String?
+  approvalDate     DateTime?
+  brand            String?
+  warranty         String?
+  sales            Int               @default(0)
+  price            Float             @default(0)
+  sellerId         String?
+  cartItems        CartItem[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  priceHistory     PriceHistory[]
+  demandMetrics    DemandMetrics?
+  competitorPrices CompetitorPrice[]
+  reviews          Review[]
+  wishlistItems    WishlistItem[]
+
+  @@index([category])
+  @@index([approved])
+}
+
+model PriceHistory {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPrice    Float
+  newPrice    Float
+  reason      String   // "stock_low", "demand_high", "competitor_price", "manual"
+  stockLevel  Int?
+  demandScore Float?
+  timestamp   DateTime @default(now())
+
+  @@index([productId])
+}
+
+model DemandMetrics {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewCount     Int      @default(0)
+  cartAddCount  Int      @default(0)
+  purchaseCount Int      @default(0)
+  lastViewed    DateTime?
+  lastUpdated   DateTime @updatedAt
+}
+
+model CompetitorPrice {
+  id             String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  competitorName String
+  price          Float
+  url            String?
+  lastChecked    DateTime @default(now())
+
+  @@index([productId])
+}
+
+model PricingConfig {
+  id                   String   @id @default(cuid())
+  stockWeight          Float    @default(0.3)
+  demandWeight         Float    @default(0.4)
+  competitorWeight     Float    @default(0.3)
+  maxIncreasePercent   Float    @default(50)
+  maxDecreasePercent   Float    @default(30)
+  minProfitMargin      Float    @default(10)
+  updateFrequencyHours Int      @default(6)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@index([productId])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           Json
+  total           Float
+  totalAmount     Float
+  status          String   @default("pending")
+  paymentId       String   @unique
+  shippingAddress Json?
+  shippingCost    Float    @default(0)
+  trackingNumber  String?
+  trackingUrl     String?
+  estimatedDelivery DateTime?
+  customerName    String?
+  sellerId        String?
+  returns         Return[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ShippingRate {
+  id              String   @id @default(cuid())
+  country         String
+  minWeight       Float    @default(0)
+  maxWeight       Float    @default(100)
+  baseCost        Float
+  perKgCost       Float
+  estimatedDays   Int
+  method          String   @default("standard") // standard, express, overnight
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([country])
+  @@index([method])
+}
+
+model Shipment {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  trackingNumber  String   @unique
+  carrier         String   // fedex, ups, dhl, etc
+  status          String   @default("pending") // pending, picked_up, in_transit, delivered, failed
+  weight          Float
+  estimatedDelivery DateTime?
+  actualDelivery  DateTime?
+  lastUpdate      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([trackingNumber])
+}
+
+model Return {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reason        String
+  description   String?
+  status        String   @default("pending") // pending, approved, rejected, refunded, completed
+  refundAmount  Float
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  title     String
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([userId])
+}
+
+model Wishlist {
+  id    String         @id @default(cuid())
+  userId String        @unique
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+  @@index([productId])
+}
+
+model TradeRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productName    String
+  category       String
+  condition      String   // "like_new", "good", "fair", "poor"
+  ageYears       Float
+  description    String?
+  imageUrl       String?
+  estimatedValue Float
+  offeredValue   Float
+  status         String   @default("pending") // "pending", "approved", "rejected", "completed"
+  adminNotes     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("general") // "order", "promotion", "general"
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([read])
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("open") // "open", "in_progress", "closed"
+  response  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+}

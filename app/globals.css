@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --background: #f5f0e8;
+  --foreground: #171717;
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Page entry animation ──────────────────────────────────────────────────── */
+/* Every page fades + slides up on load */
+main {
+  animation: page-enter 0.45s var(--ease-out) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Scroll-reveal utility ─────────────────────────────────────────────────── */
+/* Add class="reveal" to any element to animate it on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Link & button transitions ─────────────────────────────────────────────── */
+a, button {
+  transition: color 0.18s var(--ease-smooth),
+              background-color 0.18s var(--ease-smooth),
+              border-color 0.18s var(--ease-smooth),
+              box-shadow 0.18s var(--ease-smooth),
+              opacity 0.18s var(--ease-smooth),
+              transform 0.18s var(--ease-smooth);
+}
+
+/* ── Card hover lift ───────────────────────────────────────────────────────── */
+/* Any element with border + rounded corners gets a subtle lift on hover */
+.card-hover {
+  transition: transform 0.22s var(--ease-spring),
+              box-shadow 0.22s var(--ease-smooth),
+              border-color 0.22s var(--ease-smooth);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12);
+}
+
+/* ── Image zoom on hover ───────────────────────────────────────────────────── */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img,
+.img-zoom > * {
+  transition: transform 0.5s var(--ease-smooth);
+}
+.img-zoom:hover img,
+.img-zoom:hover > * {
+  transform: scale(1.05);
+}
+
+/* ── Skeleton loading pulse ────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #ede8df 25%, #e5dfd6 50%, #ede8df 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Spinner ───────────────────────────────────────────────────────────────── */
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Fade in ───────────────────────────────────────────────────────────────── */
+.fade-in {
+  animation: fade-in 0.4s var(--ease-out) both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Slide up ──────────────────────────────────────────────────────────────── */
+.slide-up {
+  animation: slide-up 0.4s var(--ease-out) both;
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stagger children ──────────────────────────────────────────────────────── */
+/* Add class="stagger" to a container — children animate in sequence */
+.stagger > * {
+  animation: slide-up 0.4s var(--ease-out) both;
+}
+.stagger > *:nth-child(1)  { animation-delay: 0.05s; }
+.stagger > *:nth-child(2)  { animation-delay: 0.10s; }
+.stagger > *:nth-child(3)  { animation-delay: 0.15s; }
+.stagger > *:nth-child(4)  { animation-delay: 0.20s; }
+.stagger > *:nth-child(5)  { animation-delay: 0.25s; }
+.stagger > *:nth-child(6)  { animation-delay: 0.30s; }
+.stagger > *:nth-child(7)  { animation-delay: 0.35s; }
+.stagger > *:nth-child(8)  { animation-delay: 0.40s; }
+.stagger > *:nth-child(9)  { animation-delay: 0.45s; }
+.stagger > *:nth-child(10) { animation-delay: 0.50s; }
+
+/* ── Float animation (hero product images) ─────────────────────────────────── */
+.animate-float {
+  animation: float 3.5s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── Pulse glow (badges, indicators) ──────────────────────────────────────── */
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
+}
+
+/* ── Navbar scroll shadow ──────────────────────────────────────────────────── */
+nav {
+  transition: box-shadow 0.3s var(--ease-smooth),
+              background-color 0.3s var(--ease-smooth);
+}
+
+/* ── Input focus ring ──────────────────────────────────────────────────────── */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  transition: box-shadow 0.2s var(--ease-smooth), border-color 0.2s var(--ease-smooth);
+}
+
+/* ── Modal / overlay entrance ──────────────────────────────────────────────── */
+.modal-enter {
+  animation: modal-enter 0.3s var(--ease-spring) both;
+}
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Toast override ────────────────────────────────────────────────────────── */
+.react-hot-toast > div {
+  animation: slide-up 0.3s var(--ease-spring) both !important;
+}
+
+/* ── Smooth image loading ──────────────────────────────────────────────────── */
+img {
+  transition: opacity 0.3s var(--ease-smooth);
+}
+img[loading] {
+  opacity: 0;
+}
+img.loaded {
+  opacity: 1;
+}
+
+/* ── Scrollbar styling ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f0e8;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4cfc7;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b8b2aa;
+}
+
+/* ── Selection color ───────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(124, 58, 237, 0.15);
+  color: #4c1d95;
+}
+
+/* ── Reduce motion for accessibility ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

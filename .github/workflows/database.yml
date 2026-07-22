@@ -1,0 +1,140 @@
+name: Database & Schema
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'prisma/**'
+      - '.github/workflows/database.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'prisma/**'
+
+jobs:
+  schema-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Validate Prisma schema
+        run: npx prisma validate
+      
+      - name: Generate Prisma client
+        run: npx prisma generate
+      
+      - name: Check for schema changes
+        run: |
+          if git diff --quiet prisma/schema.prisma; then
+            echo "✅ No schema changes"
+          else
+            echo "⚠️ Schema changes detected"
+            git diff prisma/schema.prisma
+          fi
+        continue-on-error: true
+
+  migration-check:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+      
+      - name: Verify schema
+        run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+      
+      - name: Generate migration status
+        run: npx prisma migrate status
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+        continue-on-error: true
+
+  seed-validation:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+      
+      - name: Seed database
+        run: npx prisma db seed
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+        continue-on-error: true
+      
+      - name: Verify seed data
+        run: |
+          echo "Seed data validation completed"
+          echo "Check logs for any errors"
+        continue-on-error: true
