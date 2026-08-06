@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React from 'react';
 import Link from 'next/link';
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingCart, Package, CreditCard, Truck, ShieldCheck, Zap } from 'lucide-react';

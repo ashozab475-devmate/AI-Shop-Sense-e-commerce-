@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, User, Phone, Sparkles } from 'lucide-react';
