@@ -48,6 +48,8 @@ export default function OrderDetailPage() {
       setCancelling(false);
     }
   };
+
+  const fetchOrder = async (token) => {
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         headers: { 'Authorization': `Bearer ${token}` },
