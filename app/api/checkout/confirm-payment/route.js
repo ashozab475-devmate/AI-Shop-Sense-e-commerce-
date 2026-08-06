@@ -4,6 +4,9 @@ import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
 import { sendOrderConfirmationEmail } from '@/lib/emailService';
 
+// Tell Next.js this route is always dynamic (never statically built)
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key-change-me-in-production');
