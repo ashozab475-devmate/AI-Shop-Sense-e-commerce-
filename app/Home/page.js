@@ -2,8 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import prisma from '@/lib/prisma';
 import { Truck, Headphones, RotateCcw, CreditCard, ShieldCheck, ArrowRight } from 'lucide-react';
+
+// Always render dynamically — never statically at build time
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const TRUST = [
   { icon: Truck,        title: 'Free Delivery',    sub: 'On orders over $50' },
@@ -16,17 +19,21 @@ const TRUST = [
 const BADGES = ['Best Seller', 'Top Rated', 'New', 'Premium', 'Hot', 'Trending', 'Popular', 'Featured'];
 
 export default async function Home() {
-  // Fetch 8 products for hero grid and 6 for featured section
-  const allProducts = await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
+  // Safely fetch products — return empty arrays if DB is unavailable
+  let allProducts = [];
+  try {
+    const prisma = (await import('@/lib/prisma')).default;
+    allProducts = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  } catch (err) {
+    console.error('Home page: failed to fetch products', err.message);
+  }
 
-  const heroProducts  = allProducts.slice(0, 8);
-  const featuredProducts = allProducts.slice(8, 14);
-
-  // Get unique categories for the category section
-  const categories = [...new Set(allProducts.map(p => p.category))].slice(0, 6);
+  const heroProducts      = allProducts.slice(0, 8);
+  const featuredProducts  = allProducts.slice(8, 14);
+  const categories        = [...new Set(allProducts.map(p => p.category))].slice(0, 6);
 
   return (
     <div className="min-h-screen bg-white">

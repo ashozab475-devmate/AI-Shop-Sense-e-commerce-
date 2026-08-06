@@ -11,6 +11,9 @@ import TrackView from './TrackView';
 import prisma from '@/lib/prisma';
 import { mockProducts } from '@/lib/mockData';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProductDetailsPage({ params }) {
     const { id } = await params;
 
