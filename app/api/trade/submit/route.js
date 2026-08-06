@@ -8,16 +8,29 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-k
 export async function POST(request) {
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.id || payload.userId;
-
-    const { productName, category, condition, ageYears, description, imageUrl } = await request.json();
-    if (!productName || !category || !condition || ageYears === undefined) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const valuation = await calculateTradeValue({ productName, category, condition, ageYears: parseFloat(ageYears) });
+    const { payload } = await jwtVerify(token, secret);
+    const userId = payload.userId || payload.id;
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { productName, category, condition, ageYears, description, imageUrl } = await request.json();
+    const parsedAge = Number(ageYears);
+
+    if (!productName || !category || !condition || Number.isNaN(parsedAge)) {
+      return NextResponse.json({ error: 'Missing or invalid required fields' }, { status: 400 });
+    }
+
+    const valuation = await calculateTradeValue({
+      productName,
+      category,
+      condition,
+      ageYears: parsedAge,
+    });
 
     const trade = await prisma.tradeRequest.create({
       data: {
@@ -25,7 +38,7 @@ export async function POST(request) {
         productName,
         category,
         condition,
-        ageYears: parseFloat(ageYears),
+        ageYears: parsedAge,
         description,
         imageUrl,
         estimatedValue: valuation.estimatedValue,
@@ -37,6 +50,19 @@ export async function POST(request) {
     return NextResponse.json({ success: true, trade, valuation });
   } catch (error) {
     console.error('Trade submit error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    const isAuthError =
+      message.includes('JWT') ||
+      message.includes('token') ||
+      message.includes('invalid') ||
+      message.includes('expired') ||
+      message.includes('signature');
+
+    if (isAuthError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -75,48 +75,7 @@ export default function ShoppingLogic({ initialProducts, initialSearch = '', ini
 
     return (
         <>
-            {/* ── Search bar ─────────────────────────────────────────────── */}
-            <form onSubmit={handleSubmit}
-                className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-                <div className="relative w-full md:max-w-md group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
-                    </div>
-                    <input
-                        type="text"
-                        className="block w-full pl-10 pr-10 py-2 border border-white/10 rounded-xl bg-white/5 text-slate-100 placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 text-sm transition-all"
-                        placeholder="Search products and press Enter..."
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                    {inputValue && (
-                        <button type="button" onClick={clearSearch}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors">
-                            <X className="h-4 w-4" />
-                        </button>
-                    )}
-                </div>
 
-                <button type="submit"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
-                    <Search className="h-5 w-5" />
-                    <span>Search</span>
-                </button>
-            </form>
-
-            {/* ── Active search label ─────────────────────────────────────── */}
-            {initialSearch && (
-                <div className="flex items-center gap-2 mb-4 text-sm text-slate-300">
-                    <Search className="w-4 h-4 text-blue-400" />
-                    {products.length === 0
-                        ? <span className="text-red-400">No results for <strong className="text-white">"{initialSearch}"</strong></span>
-                        : <span>Showing <strong className="text-white">{products.length}</strong> result{products.length !== 1 ? 's' : ''} for <strong className="text-white">"{initialSearch}"</strong></span>
-                    }
-                    <button onClick={clearSearch} className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs">
-                        Clear
-                    </button>
-                </div>
-            )}
 
             {/* ── Hero / Category filters ─────────────────────────────────── */}
             <section className="text-center space-y-3 sm:space-y-4">

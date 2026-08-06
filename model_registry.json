@@ -9,7 +9,7 @@
       "accuracy": 0.997,
       "response_time": 1,
       "model_size": 15.8,
-      "registered_at": "2026-07-20T11:15:38.240211",
+      "registered_at": "2026-08-06T13:36:18.689569",
       "config": {
         "model": "ViT-B-32",
         "pretrained": "openai",
@@ -26,7 +26,7 @@
       "accuracy": 0.997,
       "response_time": 1,
       "model_size": 15.8,
-      "registered_at": "2026-07-20T11:15:38.315841",
+      "registered_at": "2026-08-06T13:36:18.692900",
       "config": {
         "model": "ViT-B-32",
         "pretrained": "openai",
@@ -43,7 +43,7 @@
       "accuracy": 0.85,
       "response_time": 250,
       "model_size": 100,
-      "registered_at": "2026-07-20T11:15:38.332041",
+      "registered_at": "2026-08-06T13:36:18.697030",
       "config": {
         "model": "ResNet50",
         "pretrained": "imagenet",
@@ -53,5 +53,5 @@
     }
   },
   "active_model": null,
-  "last_updated": "2026-07-20T11:15:38.333606"
+  "last_updated": "2026-08-06T13:36:18.698519"
 }

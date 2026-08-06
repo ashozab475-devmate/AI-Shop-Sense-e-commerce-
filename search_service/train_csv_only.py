@@ -31,7 +31,7 @@ print("=" * 70)
 BASE_DIR     = Path(__file__).parent
 PROJECT_ROOT = BASE_DIR.parent
 CSV_FILES    = [
-    BASE_DIR / "data" / "abo_dataset_combined.csv",
+    BASE_DIR / "data" / "abo_dataset_6000_cleaned.csv",
 ]
 OUTPUT_INDEX = BASE_DIR / "visual_search_faiss_index.bin"
 OUTPUT_META  = BASE_DIR / "visual_search_train_metadata.pkl"
@@ -42,6 +42,7 @@ BATCH_SIZE   = 32
 print("\n[1/4] Loading CSV files...")
 all_rows = []
 seen_paths = set()
+public_abo_root = BASE_DIR.parent / 'public' / 'product-images' / 'abo'
 
 for csv_file in CSV_FILES:
     if not csv_file.exists():
@@ -50,14 +51,33 @@ for csv_file in CSV_FILES:
     with open(csv_file, newline='', encoding='utf-8') as f:
         rows = list(csv.DictReader(f))
     added = 0
+    missing = 0
     for row in rows:
         img_path = row.get('image_path', '').strip()
-        if img_path and img_path not in seen_paths:
-            if Path(img_path).exists():
-                seen_paths.add(img_path)
-                all_rows.append(row)
-                added += 1
-    print(f"  {csv_file.name}: {added} valid unique rows loaded")
+        if not img_path or img_path in seen_paths:
+            continue
+
+        resolved_path = Path(img_path)
+        if not resolved_path.exists():
+            alt_name = resolved_path.name
+            alt_path = public_abo_root / f"abo_{alt_name}"
+            if alt_path.exists():
+                resolved_path = alt_path
+            else:
+                # Try best-effort fallback by searching for the same basename in the workspace.
+                matches = list(BASE_DIR.parent.rglob(alt_name))
+                if len(matches) == 1:
+                    resolved_path = matches[0]
+                else:
+                    missing += 1
+                    continue
+
+        seen_paths.add(str(resolved_path))
+        row['image_path'] = str(resolved_path)
+        all_rows.append(row)
+        added += 1
+
+    print(f"  {csv_file.name}: {added} valid unique rows loaded, {missing} missing image paths")
 
 print(f"\n  Total unique images to index: {len(all_rows)}")
 

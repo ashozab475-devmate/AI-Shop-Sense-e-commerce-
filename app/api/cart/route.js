@@ -14,7 +14,22 @@ export async function GET(request) {
         }
 
         const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key-change-me-in-production');
-        const decoded = await jwtVerify(token, secret);
+        let decoded;
+
+        try {
+            decoded = await jwtVerify(token, secret);
+        } catch (jwtError) {
+            const isExpired = jwtError?.code === 'ERR_JWT_EXPIRED' || jwtError?.message?.includes('JWTExpired');
+            const isInvalid = jwtError?.code === 'ERR_JWT' || jwtError?.message?.includes('invalid');
+
+            if (isExpired || isInvalid) {
+                console.warn('Cart token invalid or expired:', jwtError?.message || jwtError);
+                return NextResponse.json({ cart: { id: null, items: [], total: 0, itemCount: 0 } }, { status: 200 });
+            }
+
+            throw jwtError;
+        }
+
         const userId = decoded.payload.id || decoded.payload.userId;
         if (!userId) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
 

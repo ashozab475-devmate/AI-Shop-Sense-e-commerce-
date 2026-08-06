@@ -3,31 +3,22 @@
   "embedding_type": "image",
   "index_type": "IndexFlatIP",
   "embedding_dim": 512,
-  "num_products": 3820,
+  "num_products": 1808,
   "errors": 0,
   "categories": {
-    "Smartphones": 1252,
-    "Shoes": 374,
-    "Sports": 272,
-    "Jackets": 125,
-    "Dinnerware": 97,
-    "Tables": 261,
-    "Sofas": 176,
-    "Appliances": 182,
-    "Shirts": 65,
-    "Tablets": 240,
-    "Outdoors": 68,
-    "Dresses": 65,
-    "Beds": 138,
-    "Cookware": 162,
-    "Laptops": 32,
-    "Headphones": 97,
-    "Jeans": 66,
-    "Chairs": 111,
-    "Cameras": 34,
-    "Bicycles": 3
+    "Appliances": 190,
+    "Cookware": 133,
+    "Dinnerware": 64,
+    "Jackets": 68,
+    "Jeans": 39,
+    "Shoes": 193,
+    "Smartphones": 695,
+    "Sofas": 107,
+    "Sports": 157,
+    "Tables": 162
   },
   "sources": [
-    "D:\\FYP Project\\fypapp\\search_service\\data\\abo_dataset_combined.csv"
-  ]
+    "D:\\completed fypapp\\completed fypapp\\completed fypapp\\relevant_images_index.csv"
+  ],
+  "trained_at": "2026-08-04T21:42:09.171929"
 }

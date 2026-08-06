@@ -41,9 +41,10 @@ print()
 
 # Load dataset
 print("[2/6] Loading dataset...")
-df = pd.read_csv('data/abo_dataset_6000.csv')
+df = pd.read_csv('data/abo_dataset_6000_cleaned.csv')
 print(f"  Total images: {len(df)}")
 print(f"  Categories: {df['label_id'].nunique()}")
+print("  Using cleaned ABO dataset: abo_dataset_6000_cleaned.csv")
 
 # Split data
 train_df = df[df['split'] == 'train'].reset_index(drop=True)
