@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
-const prisma = new PrismaClient();
 
 export async function GET(request) {
   try {

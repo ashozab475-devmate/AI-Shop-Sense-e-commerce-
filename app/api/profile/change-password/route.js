@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key-change-me-in-production');
 
 export async function POST(request) {

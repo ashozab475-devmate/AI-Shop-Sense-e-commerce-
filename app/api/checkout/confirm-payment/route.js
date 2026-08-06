@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
-import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
 import { sendOrderConfirmationEmail } from '@/lib/emailService';
 
-// Tell Next.js this route is always dynamic (never statically built)
 export const dynamic = 'force-dynamic';
 
-const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key-change-me-in-production');
-
 export async function POST(request) {
+  // ── All initialisations inside the handler — safe at build time ──────────
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const secret = new TextEncoder().encode(
+    process.env.JWT_SECRET || 'your-secret-key-change-me-in-production'
+  );
+
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
     if (!token) {
@@ -40,60 +41,70 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // Create order
+    // Build order items
     const orderItems = cart.items.map(item => ({
-      productId: item.productId,
+      productId:   item.productId,
       productName: item.product.name,
-      quantity: item.quantity,
-      price: item.price,
+      quantity:    item.quantity,
+      price:       item.price,
     }));
 
-    const totalAmount = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmount = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
+    // Create order
     const order = await prisma.order.create({
       data: {
         userId,
-        items: orderItems,
+        items:           orderItems,
         totalAmount,
-        paymentId: paymentIntentId,
+        total:           totalAmount,
+        paymentId:       paymentIntentId,
         shippingAddress,
-        status: 'processing',
+        status:          'processing',
       },
     });
 
     // Clear cart
-    await prisma.cartItem.deleteMany({
-      where: { cartId: cart.id },
-    });
+    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
 
-    // Track purchase demand for each product — fire and forget
-    const trackingPromises = cart.items.map(item =>
-      prisma.demandMetrics.upsert({
-        where:  { productId: item.productId },
-        update: { purchaseCount: { increment: item.quantity }, cartAddCount: { increment: item.quantity } },
-        create: { productId: item.productId, purchaseCount: item.quantity, cartAddCount: item.quantity, viewCount: 0 },
-      }).catch(() => {})
+    // Track purchase demand — fire and forget
+    await Promise.allSettled(
+      cart.items.map(item =>
+        prisma.demandMetrics.upsert({
+          where:  { productId: item.productId },
+          update: {
+            purchaseCount: { increment: item.quantity },
+            cartAddCount:  { increment: item.quantity },
+          },
+          create: {
+            productId:     item.productId,
+            purchaseCount: item.quantity,
+            cartAddCount:  item.quantity,
+            viewCount:     0,
+          },
+        }).catch(() => {})
+      )
     );
-    await Promise.allSettled(trackingPromises);
-
-    // Get user info for email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, email: true },
-    });
 
     // Send order confirmation email
-    if (user) {
-      await sendOrderConfirmationEmail(user, order);
-    }
+    const user = await prisma.user.findUnique({
+      where:  { id: userId },
+      select: { name: true, email: true },
+    });
+    if (user) await sendOrderConfirmationEmail(user, order);
 
     return NextResponse.json({
       orderId: order.id,
-      status: 'success',
-      message: 'Order created successfully. Confirmation email sent.',
+      status:  'success',
+      message: 'Order created successfully.',
     });
   } catch (error) {
     console.error('Confirm payment error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
