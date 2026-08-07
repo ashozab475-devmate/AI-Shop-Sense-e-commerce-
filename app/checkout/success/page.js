@@ -1,24 +1,15 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function CheckoutSuccessPage() {
-  const router = useRouter();
+export const dynamic = 'force-dynamic';
+
+// useSearchParams must be inside a Suspense boundary
+function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -38,26 +29,33 @@ export default function CheckoutSuccessPage() {
             Order ID: <span className="font-mono font-semibold">{orderId}</span>
           </p>
         )}
-
         <p className="text-gray-600 mb-8">
           We've sent a confirmation email with your order details and tracking information.
         </p>
 
         <div className="space-y-3">
-          <Link
-            href="/orders"
-            className="block w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
-          >
+          <Link href="/orders"
+            className="block w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">
             View Orders
           </Link>
-          <Link
-            href="/shopping"
-            className="block w-full bg-gray-200 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-300"
-          >
+          <Link href="/shopping"
+            className="block w-full bg-gray-200 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-300">
             Continue Shopping
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }

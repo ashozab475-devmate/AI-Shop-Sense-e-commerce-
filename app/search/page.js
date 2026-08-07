@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   const [products, setProducts] = useState([]);
@@ -171,5 +171,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
+      <SearchContent />
+    </Suspense>
   );
 }

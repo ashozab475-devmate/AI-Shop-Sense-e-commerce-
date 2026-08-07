@@ -2,14 +2,14 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Mail, Lock, Eye, EyeOff, LogIn, ShoppingBag, Store, ShieldCheck } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
-export default function SignIn() {
+function SignInContent() {
   const [loginAs, setLoginAs] = useState('buyer');
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -357,5 +357,13 @@ export default function SignIn() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#e8380d]"></div></div>}>
+      <SignInContent />
+    </Suspense>
   );
 }
