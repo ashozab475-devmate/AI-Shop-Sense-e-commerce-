@@ -1,37 +1,32 @@
 ﻿'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-function AdminAnalyticsContent() {
-  const { data: session, status } = useSession();
+export const dynamic = 'force-dynamic';
+
+export default function AdminAnalyticsPage() {
   const router = useRouter();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('month');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') { router.push('/sign_in'); return; }
-    if (session?.user?.role !== 'admin') { router.push('/'); return; }
+    setMounted(true);
+    const token = localStorage.getItem('token');
+    if (!token) { router.push('/sign_in'); return; }
 
-    const fetchAnalytics = async () => {
-      try {
-        const res = await fetch(`/api/admin/analytics?period=${period}`);
-        const data = await res.json();
-        setAnalytics(data);
-      } catch (error) {
-        console.error('Error fetching analytics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetch(`/api/admin/analytics?period=${period}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(setAnalytics)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [router, period]);
 
-    if (status === 'authenticated') fetchAnalytics();
-  }, [status, session, router, period]);
-
-  if (status === 'loading' || loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-600">Loading analytics...</p>
@@ -114,13 +109,5 @@ function AdminAnalyticsContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function AdminAnalyticsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>}>
-      <AdminAnalyticsContent />
-    </Suspense>
   );
 }

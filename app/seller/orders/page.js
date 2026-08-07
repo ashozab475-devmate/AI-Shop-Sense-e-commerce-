@@ -1,33 +1,28 @@
 ﻿'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-function SellerOrdersContent() {
-  const { data: session, status } = useSession();
+export const dynamic = 'force-dynamic';
+
+export default function SellerOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') { router.push('/sign_in'); return; }
-    if (session?.user?.role !== 'seller' && session?.user?.role !== 'admin') { router.push('/'); return; }
-    if (status === 'authenticated') {
-      fetch('/api/seller/orders').then(r => r.json()).then(d => setOrders(d.orders || [])).catch(console.error).finally(() => setLoading(false));
-    }
-  }, [status, session, router]);
+    setMounted(true);
+    const token = localStorage.getItem('token');
+    if (!token) { router.push('/sign_in'); return; }
+    fetch('/api/seller/orders', { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json()).then(d => setOrders(d.orders||[])).catch(console.error).finally(() => setLoading(false));
+  }, [router]);
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
-    await fetch(`/api/seller/orders/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
-    setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-  };
+  const filteredOrders = orders.filter(o => filter === 'all' || o.status === filter);
 
-  const filtered = orders.filter(o => filter === 'all' || o.status === filter);
-
-  if (status === 'loading' || loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-600">Loading orders...</p></div>;
+  if (!mounted || loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-600">Loading orders...</p></div>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -36,28 +31,23 @@ function SellerOrdersContent() {
         <div className="mb-6 flex gap-2 flex-wrap">
           {['all','pending','processing','shipped','delivered','cancelled'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg font-semibold capitalize ${filter === f ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50'}`}>{f}</button>
+              className={`px-4 py-2 rounded-lg font-semibold capitalize ${filter===f?'bg-blue-600 text-white':'bg-white text-gray-900 border border-gray-300'}`}>{f}</button>
           ))}
         </div>
-        {filtered.length > 0 ? (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+        {filteredOrders.length > 0 ? (
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-100 border-b">
-                <tr>{['Order ID','Customer','Total','Status','Date','Actions'].map(h => <th key={h} className="px-6 py-4 text-left font-semibold text-gray-900">{h}</th>)}</tr>
+                <tr>{['Order ID','Customer','Total','Status','Date'].map(h=><th key={h} className="px-6 py-4 text-left font-semibold text-gray-900">{h}</th>)}</tr>
               </thead>
               <tbody>
-                {filtered.map(order => (
-                  <tr key={order.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4 font-semibold">#{order.id.slice(0,8)}</td>
-                    <td className="px-6 py-4">{order.customerName}</td>
-                    <td className="px-6 py-4">${order.total}</td>
-                    <td className="px-6 py-4">
-                      <select value={order.status} onChange={e => handleStatusUpdate(order.id, e.target.value)} className="px-3 py-1 border border-gray-300 rounded-lg text-sm">
-                        {['pending','processing','shipped','delivered','cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4"><button className="text-blue-600 hover:text-blue-800 font-semibold text-sm">View</button></td>
+                {filteredOrders.map(o=>(
+                  <tr key={o.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4 font-semibold">#{o.id?.slice(0,8)}</td>
+                    <td className="px-6 py-4">{o.customerName}</td>
+                    <td className="px-6 py-4">${o.total}</td>
+                    <td className="px-6 py-4"><span className="capitalize px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">{o.status}</span></td>
+                    <td className="px-6 py-4 text-gray-600 text-sm">{new Date(o.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -66,13 +56,5 @@ function SellerOrdersContent() {
         ) : <div className="text-center py-12 bg-white rounded-lg"><p className="text-gray-600">No orders found.</p></div>}
       </div>
     </div>
-  );
-}
-
-export default function SellerOrdersPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>}>
-      <SellerOrdersContent />
-    </Suspense>
   );
 }

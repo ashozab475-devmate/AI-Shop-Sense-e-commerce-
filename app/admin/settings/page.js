@@ -1,11 +1,11 @@
 ﻿'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-function AdminSettingsContent() {
-  const { data: session, status } = useSession();
+export const dynamic = 'force-dynamic';
+
+export default function AdminSettingsPage() {
   const router = useRouter();
   const [settings, setSettings] = useState({
     siteName: 'ShopSense', siteEmail: 'support@shopsense.com',
@@ -15,48 +15,39 @@ function AdminSettingsContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') { router.push('/sign_in'); return; }
-    if (session?.user?.role !== 'admin') { router.push('/'); return; }
+    setMounted(true);
+    const token = localStorage.getItem('token');
+    if (!token) { router.push('/sign_in'); return; }
 
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch('/api/admin/settings');
-        const data = await res.json();
-        if (data.settings) setSettings(data.settings);
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated') fetchSettings();
-  }, [status, session, router]);
+    fetch('/api/admin/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { if (d.settings) setSettings(d.settings); })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [router]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setSettings(p => ({ ...p, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
+    e.preventDefault(); setSaving(true);
+    const token = localStorage.getItem('token');
     try {
       const res = await fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(settings),
       });
       setMessage(res.ok ? 'Settings saved successfully!' : 'Error saving settings');
       setTimeout(() => setMessage(''), 3000);
-    } catch { setMessage('Error saving settings'); }
-    finally { setSaving(false); }
+    } catch { setMessage('Error saving settings'); } finally { setSaving(false); }
   };
 
-  if (status === 'loading' || loading) {
+  if (!mounted || loading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-600">Loading settings...</p></div>;
   }
 
@@ -64,15 +55,13 @@ function AdminSettingsContent() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-gray-900">System Settings</h1>
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{message}</div>
-        )}
+        {message && <div className={`mb-6 p-4 rounded-lg ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{message}</div>}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-8 space-y-6">
           {[['siteName','text','Site Name'],['siteEmail','email','Site Email'],['sitePhone','tel','Site Phone']].map(([name,type,label]) => (
             <div key={name}>
               <label className="block text-sm font-semibold text-gray-900 mb-2">{label}</label>
               <input type={type} name={name} value={settings[name]} onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
             </div>
           ))}
           <div>
@@ -86,26 +75,16 @@ function AdminSettingsContent() {
           <div className="space-y-3">
             {[['maintenanceMode','Enable Maintenance Mode'],['emailNotifications','Enable Email Notifications']].map(([name,label]) => (
               <div key={name} className="flex items-center">
-                <input type="checkbox" name={name} checked={settings[name]} onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500" />
+                <input type="checkbox" name={name} checked={settings[name]} onChange={handleChange} className="w-4 h-4 text-blue-600 border-gray-300 rounded" />
                 <label className="ml-3 text-sm font-semibold text-gray-900">{label}</label>
               </div>
             ))}
           </div>
-          <button type="submit" disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-semibold">
+          <button type="submit" disabled={saving} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-semibold">
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
         </form>
       </div>
     </div>
-  );
-}
-
-export default function AdminSettingsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>}>
-      <AdminSettingsContent />
-    </Suspense>
   );
 }
