@@ -167,10 +167,10 @@ export default function VisualSearch() {
                                 {isConnectionError ? '⚠️ Search service offline' : '🔍 Product not found'}
                             </h4>
                             <p className="text-sm">
-                                {isConnectionError
-                                    ? 'The AI search service is not running. Start it with: python search_service/start_server.py'
-                                    : 'This product does not match any item in our catalog. Try uploading a clearer photo of a product from our supported categories: Smartphones, Tablets, Laptops, Headphones, Cameras, Appliances, Sofas, Beds, Tables, Chairs, Shoes, Jackets, Shirts, Dresses, Jeans, Cookware, Dinnerware, Sports, Outdoors, or Bicycles.'}
-                            </p>
+                            {isConnectionError
+                                ? 'The AI Visual Search service is not available in this deployment. To use visual search, the Python search service needs to be running separately.'
+                                : 'This product does not match any item in our catalog. Try uploading a clearer photo of a product from our supported categories: Smartphones, Appliances, Sofas, Tables, Shoes, Jackets, Jeans, Cookware, Dinnerware, or Sports equipment.'}
+                        </p>
                         </div>
                     ) : loading ? (
                         <div className="h-48 flex flex-col items-center justify-center space-y-4 border border-gray-800 rounded-xl bg-[#0f192f]">

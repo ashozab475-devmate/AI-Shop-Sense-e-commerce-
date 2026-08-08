@@ -298,7 +298,8 @@ if __name__ == '__main__':
         print("Server is running on http://localhost:5000")
         print("Press Ctrl+C to stop the server")
         print()
-        serve(app, host='0.0.0.0', port=5000, threads=4)
+        port = int(os.environ.get('PORT', 5000))
+        serve(app, host='0.0.0.0', port=port, threads=4)
     except KeyboardInterrupt:
         print("\nServer stopped.")
         sys.exit(0)
