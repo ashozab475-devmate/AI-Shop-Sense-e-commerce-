@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./context/CartContext";
+import { Providers } from "./providers";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "react-hot-toast";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
@@ -28,17 +29,19 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ErrorBoundary>
-          <CartProvider>
-            <Toaster position="top-right" toastOptions={{
-              error: { duration: 4000 },
-              success: { duration: 3000 },
-            }} />
-            <ServiceWorkerRegister />
-            <ScrollReveal />
-            {children}
-          </CartProvider>
-        </ErrorBoundary>
+        <Providers>
+          <ErrorBoundary>
+            <CartProvider>
+              <Toaster position="top-right" toastOptions={{
+                error: { duration: 4000 },
+                success: { duration: 3000 },
+              }} />
+              <ServiceWorkerRegister />
+              <ScrollReveal />
+              {children}
+            </CartProvider>
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );
