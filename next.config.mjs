@@ -17,10 +17,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'picsum.photos',        pathname: '/**' },
       { protocol: 'https', hostname: '**.amazonaws.com',     pathname: '/**' },
       { protocol: 'https', hostname: '**.cloudinary.com',    pathname: '/**' },
+      { protocol: 'https', hostname: 'm.media-amazon.com',   pathname: '/**' },
+      { protocol: 'https', hostname: '**.googleusercontent.com', pathname: '/**' },
     ],
-    // Allow any domain as fallback (dev only — remove in production)
     dangerouslyAllowSVG: true,
-    unoptimized: false,
+    unoptimized: true,
   },
   async headers() {
     return [

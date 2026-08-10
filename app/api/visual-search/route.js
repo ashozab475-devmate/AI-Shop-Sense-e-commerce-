@@ -1,8 +1,47 @@
+/**
+ * Visual Search API — Pure JavaScript CLIP via @xenova/transformers
+ * No Python service needed. Runs entirely on Vercel serverless.
+ *
+ * Flow:
+ *  1. Receive uploaded image
+ *  2. Extract CLIP embedding using transformers.js (ViT-B/32)
+ *  3. Compare against pre-computed index in public/visual-search-index.json
+ *  4. Return top matches with similarity scores
+ */
+
 import { NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { loadSearchIndex, findTopK } from '@/lib/visualSearchIndex';
 
 export const dynamic = 'force-dynamic';
+// Allow larger payloads for image uploads
+export const config = { api: { bodyParser: false } };
+
+// Cache the pipeline across requests (module-level singleton)
+let _pipeline = null;
+
+async function getEmbeddingPipeline() {
+  if (_pipeline) return _pipeline;
+
+  try {
+    const { pipeline, env } = await import('@xenova/transformers');
+
+    // Use local cache in /tmp on Vercel to avoid re-downloading
+    env.cacheDir = '/tmp/transformers-cache';
+    env.allowLocalModels = false;
+
+    _pipeline = await pipeline(
+      'image-feature-extraction',
+      'Xenova/clip-vit-base-patch32',
+      { revision: 'main' }
+    );
+
+    console.log('[VisualSearch] CLIP pipeline loaded');
+    return _pipeline;
+  } catch (err) {
+    console.error('[VisualSearch] Failed to load pipeline:', err.message);
+    return null;
+  }
+}
 
 export async function POST(request) {
   try {
@@ -13,95 +52,81 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const pythonServiceUrl = process.env.SEARCH_SERVICE_URL;
+    // ── Load search index ───────────────────────────────────────────────────
+    const index = await loadSearchIndex();
 
-    // ── No external search service — graceful offline mode ──────────────────
-    if (!pythonServiceUrl || pythonServiceUrl.includes('127.0.0.1') || pythonServiceUrl.includes('localhost')) {
+    if (!index || index.length === 0) {
       return NextResponse.json(
-        { error: 'Visual search service is not configured for this deployment.', offline: true },
+        { error: 'Visual search index not available. Please check deployment.', offline: true },
         { status: 503 }
       );
     }
 
-    const pythonFormData = new FormData();
-    pythonFormData.append('image', file);
+    // ── Get CLIP pipeline ───────────────────────────────────────────────────
+    const extractor = await getEmbeddingPipeline();
 
-    const response = await fetch(pythonServiceUrl, {
-      method: 'POST',
-      body: pythonFormData,
-      signal: AbortSignal.timeout(15000), // 15s timeout
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Search service error:', errorText);
+    if (!extractor) {
       return NextResponse.json(
-        { error: `Search service failed: ${response.statusText}` },
-        { status: response.status }
+        { error: 'Visual search model not available.', offline: true },
+        { status: 503 }
       );
     }
 
-    const data = await response.json();
+    // ── Extract embedding from uploaded image ───────────────────────────────
+    const arrayBuffer = await file.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    const mimeType = file.type || 'image/jpeg';
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    if (data.status === 'success' && data.products && data.products.length > 0) {
-      const MIN_SCORE = 0.30;
-      const qualified = data.products.filter(p => (p.similarity_score || 0) >= MIN_SCORE);
+    const output = await extractor(dataUrl, { pooling: 'mean', normalize: true });
+    const embedding = Array.from(output.data);
 
-      if (qualified.length === 0) {
-        return NextResponse.json({ message: 'No result found' });
-      }
+    // ── Find top matches ────────────────────────────────────────────────────
+    const topMatches = findTopK(embedding, index, 5, 0.20);
 
-      // Convert image paths to base64 or use relative_path for serving
-      const products = await Promise.all(qualified.map(async (p) => {
-        let imageUrl = p.image_url || '';
-        const imgPath = p.image_path || p.path || '';
-        const relPath = p.relative_path || '';
-
-        if (!imageUrl && imgPath) {
-          try {
-            // Try relative path from relevant_images first
-            if (relPath) {
-              const absPath = path.join(process.cwd(), relPath);
-              const imgBuffer = await readFile(absPath);
-              imageUrl = `data:image/jpeg;base64,${imgBuffer.toString('base64')}`;
-            } else {
-              const imgBuffer = await readFile(imgPath);
-              imageUrl = `data:image/jpeg;base64,${imgBuffer.toString('base64')}`;
-            }
-          } catch {
-            imageUrl = '';
-          }
-        }
-
-        return {
-          name:     p.product_name || p.name || 'Unknown Product',
-          category: p.category || '',
-          price:    p.price || 0,
-          score:    p.similarity_score || 0,
-          imageUrl,
-        };
-      }));
-
-      return NextResponse.json({
-        best_match: { ...products[0], score: 0.99 },
-        similar:    products.slice(1, 3).map(p => ({ ...p, score: 0.95 })),
-      });
+    if (topMatches.length === 0) {
+      return NextResponse.json({ message: 'No result found' });
     }
 
-    return NextResponse.json({ message: 'No result found' });
+    // Format results — serve images as base64 from relevant_images/
+    const { readFile } = await import('fs/promises');
+    const { join } = await import('path');
+
+    const formatProduct = async (match) => {
+      let imageUrl = '';
+
+      if (match.relative_path) {
+        try {
+          const absPath = join(process.cwd(), match.relative_path);
+          const buf = await readFile(absPath);
+          imageUrl = `data:image/jpeg;base64,${buf.toString('base64')}`;
+        } catch {
+          imageUrl = '';
+        }
+      }
+
+      return {
+        name:     match.category || 'Product',
+        category: match.category || '',
+        price:    match.price    || 0,
+        score:    match.score,
+        imageUrl,
+        image_id: match.image_id,
+      };
+    };
+
+    const formatted = await Promise.all(topMatches.map(formatProduct));
+
+    return NextResponse.json({
+      best_match: formatted[0],
+      similar:    formatted.slice(1),
+    });
 
   } catch (error) {
-    const isConnRefused = error.code === 'ECONNREFUSED' || error.name === 'TimeoutError' ||
-      error.message?.includes('ECONNREFUSED') || error.message?.includes('fetch failed');
-    console.error('Visual Search Error:', error.message);
-
+    console.error('[VisualSearch] Error:', error.message);
     return NextResponse.json(
-      {
-        error: isConnRefused ? 'Search service unavailable.' : 'Search service error.',
-        offline: isConnRefused,
-        details: error.message,
-      },
-      { status: isConnRefused ? 503 : 500 }
+      { error: 'Visual search failed.', details: error.message, offline: true },
+      { status: 500 }
     );
   }
 }

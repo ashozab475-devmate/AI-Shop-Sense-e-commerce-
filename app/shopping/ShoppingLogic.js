@@ -130,13 +130,13 @@ export default function ShoppingLogic({ initialProducts, initialSearch = '', ini
 
                         <div className="relative rounded-xl overflow-hidden border border-white/10 h-48 sm:h-64 bg-slate-800">
                             <img
-                                src={product.imageUrl || '/product-images/placeholder.png'}
+                                src={product.imageUrl || product.image || `https://picsum.photos/seed/${product.id}/400/400`}
                                 alt={product.name}
                                 className="absolute inset-0 w-full h-full object-cover transition duration-500 ease-out group-hover:scale-105"
                                 loading={idx < 2 ? 'eager' : 'lazy'}
                                 onError={(e) => {
                                     e.target.onerror = null;
-                                    e.target.style.display = 'none';
+                                    e.target.src = `https://picsum.photos/seed/${product.name?.replace(/\s/g,'')}/400/400`;
                                 }}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
