@@ -131,7 +131,10 @@ export const authOptions = {
     },
   },
 
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production',
+  secret: process.env.NEXTAUTH_SECRET || 'shopsense-secret-2026-production',
+
+  // Trust the host header on Vercel
+  trustHost: true,
 };
 
 const handler = NextAuth(authOptions);
